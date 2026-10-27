@@ -1,1 +1,1 @@
-# Malom-Jatek
+# Nine Men's Morris
