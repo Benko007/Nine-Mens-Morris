@@ -17,13 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # A Sonar a teljes git előzményből számol blame/diff adatokat
+          fetch-depth: 0  # The sonar-scanner needs the full history to assign issues properly
 
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@v3.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # SonarCloud esetén elhagyható
         with:
           args: >
             -Dsonar.projectKey=my_project_key
