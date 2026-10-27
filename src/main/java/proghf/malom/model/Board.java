@@ -11,7 +11,8 @@ public class Board {
     private final PlayerColor[] positions;
 
     /**
-     * Constructs a new Board with all positions set to NONE.
+     * A map representing the adjacency of positions on the board. 
+     * Each key is a position index, and the value is a list of indices that are adjacent to that position.
      */
     private static final Map<Integer, List<Integer>> adjacentPositions = new HashMap<>();
     static {
@@ -42,7 +43,8 @@ public class Board {
     }
 
     /**
-     * A list of all possible mills on the board. Each mill is represented as a set of three positions.
+     * A list of all possible mills on the board. 
+     * Each mill is represented as a set of three positions.
      */
     private static final List<Set<Integer>> mills = List.of(
             Set.of(0, 1, 2),
@@ -133,5 +135,4 @@ public class Board {
         }
         return false;
     }
-    
 }
