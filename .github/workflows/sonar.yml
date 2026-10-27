@@ -1,0 +1,31 @@
+name: SonarQube Analysis
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - develop
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  sonarqube:
+    name: SonarQube Trigger
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # A Sonar a teljes git előzményből számol blame/diff adatokat
+
+      - name: SonarQube Scan
+        uses: SonarSource/sonarqube-scan-action@v3.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # SonarCloud esetén elhagyható
+        with:
+        args: >
+          -Dsonar.projectKey=my_project_key
+          -Dsonar.organization=my_organization_key
+          -Dsonar.sources=.

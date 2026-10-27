@@ -13,6 +13,7 @@ public class Player {
         this.piecesOnBoard = 0; // No pieces on the board initially
     }
 
+    /* ================== Getters ================== */
     /**
      * Gets the name of the player.
      * @return
@@ -45,6 +46,7 @@ public class Player {
         return piecesOnBoard;
     }
 
+    /* ================== Setters ================== */
     /**
      * Decrements the number of pieces the player has in hand.
      */
@@ -60,12 +62,17 @@ public class Player {
     }
 
     /**
-     * Decrements the number of pieces the player has on the board.
+     * Decrements the number of pieces the player has on the board
      */
     public void decrementPiecesOnBoard() {
         if (piecesOnBoard > 0) piecesOnBoard--;
     }
 
+    /* ================== Checkers ================== */
+    /**
+     * Checks if the player can fly (has only 3 pieces on the board and none in hand).
+     * @return true if the player can fly, false otherwise.
+     */
     public boolean canFly(){
         return piecesOnBoard == 3 && piecesInHand == 0;
     }
