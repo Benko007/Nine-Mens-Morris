@@ -25,7 +25,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }} # SonarCloud esetén elhagyható
         with:
-        args: >
-          -Dsonar.projectKey=my_project_key
-          -Dsonar.organization=my_organization_key
-          -Dsonar.sources=.
+          args: >
+            -Dsonar.projectKey=my_project_key
+            -Dsonar.organization=my_organization_key
+            -Dsonar.sources=.
