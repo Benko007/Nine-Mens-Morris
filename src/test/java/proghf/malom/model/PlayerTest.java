@@ -42,6 +42,7 @@ class PlayerTest {
 
         // Simulate placing pieces on the board
         for (int i = 0; i < 9; i++) {
+            player.decrementPiecesInHand();
             player.incrementPiecesOnBoard();
         }
         assertEquals(9, player.getPiecesOnBoard());
