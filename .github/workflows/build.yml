@@ -32,5 +32,11 @@ jobs:
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Beépített GitHub token a PR elemzésekhez
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # A saját SonarCloud titkos kulcsod
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=Benko007_Nine-Mens-Morris
+            -Dsonar.organization=benko007
+            -Dsonar.java.binaries=target/classes
+            -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
