@@ -28,9 +28,9 @@ jobs:
       - name: Run Unit Tests and Generate Coverage
         run: mvn clean test jacoco:report
 
-      # SonarQube / SonarCloud analízis futtatása
+      # Hivatalos SonarCloud Scan Action
       - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # A GitHub saját tokenje a PR kommentekhez
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Az előbb létrehozott titkos kulcsod
-        run: mvn sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Beépített GitHub token a PR elemzésekhez
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # A saját SonarCloud titkos kulcsod
