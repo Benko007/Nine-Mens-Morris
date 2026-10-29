@@ -5,6 +5,7 @@ on:
     branches: [ "main", "master", "dev" ] # Add meg a branch-eket, amikre futnia kell
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch: 
 
 jobs:
   build:
