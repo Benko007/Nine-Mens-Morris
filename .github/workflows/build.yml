@@ -1,0 +1,36 @@
+name: Build, Test & SonarAnalysis
+
+on:
+  push:
+    branches: [ "main", "master", "dev" ] # Add meg a branch-eket, amikre futnia kell
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  build:
+    name: Build and Analyze
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fontos a Sonarnak, hogy lássa a teljes git historyt
+
+      # Itt állítjuk be a Java verziót (pl. Java 21 vagy a legújabb amit használsz)
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '25' # Vagy '25' / 'latest', amit a GitHub Actions támogat
+          distribution: 'temurin'
+          cache: 'maven'
+
+      # Unit tesztek futtatása és JaCoCo riport generálása
+      - name: Run Unit Tests and Generate Coverage
+        run: mvn clean test jacoco:report
+
+      # SonarQube / SonarCloud analízis futtatása
+      - name: SonarCloud Scan
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # A GitHub saját tokenje a PR kommentekhez
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}    # Az előbb létrehozott titkos kulcsod
+        run: mvn sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
