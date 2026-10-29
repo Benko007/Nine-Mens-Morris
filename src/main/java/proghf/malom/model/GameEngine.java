@@ -59,6 +59,13 @@ public class GameEngine {
         return currentPlayer == player1 ? player2 : player1;
     }
 
+    /**
+     * Getters of the player
+     * @return the player.
+     */
+    public Player getPlayer1() { return player1; }
+    public Player getPlayer2() { return player2; }
+
     /* ================== Placing phase ================== */
     /**
      * Attempts to place a piece for the current player at the specified position.

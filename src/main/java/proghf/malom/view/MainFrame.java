@@ -3,11 +3,14 @@ package proghf.malom.view;
 import proghf.malom.model.GameEngine;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+
 import java.awt.*;
 
 public class MainFrame extends JFrame{
     private GameEngine engine;
     private BoardPanel boardPanel;
+    private HandPanel handPanel;
     private JLabel statusLabel;
 
     /**
@@ -33,10 +36,15 @@ public class MainFrame extends JFrame{
         
         // On click event manager
         boardPanel.setOnNodeClicked(this::handleNodeClicked);
+
+        // Add BoardPanel & HandPanel
         add(boardPanel, BorderLayout.CENTER);
+        handPanel = new HandPanel(engine);
+        add(handPanel, BorderLayout.SOUTH);
 
         pack();
-        setLocationRelativeTo(null); // Center the board on the screen
+        setLocationRelativeTo(null);
+        setMinimumSize(new Dimension(650, 700));
     }
 
     /**
@@ -66,7 +74,8 @@ public class MainFrame extends JFrame{
 
         if (success) {
             updateStatusLabel();
-            boardPanel.repaint(); // Update the table after successful moving
+            boardPanel.repaint(); // Update the boardpanel after successful moving
+            handPanel.repaint(); // Update the handpanel after successful moving
         }
     }
 
