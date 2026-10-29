@@ -21,7 +21,7 @@ public class MainFrame extends JFrame{
         // Initialize a new Game
         engine = new GameEngine("Player 1 (White)", "Player 2 (Black)");
 
-        // Top status section
+        // Top status bar initialization
         statusLabel = new JLabel("Welcome! Placing Phase - White's move.", SwingConstants.CENTER);
         statusLabel.setFont(new Font("Arial", Font.BOLD, 16));
         statusLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
