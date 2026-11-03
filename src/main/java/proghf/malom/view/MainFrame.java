@@ -67,10 +67,7 @@ public class MainFrame extends JFrame{
                 case PLACING:
                     success = engine.placePiece(index);
                     break; 
-                case MOVING:
-                    /*System.out.println("Moving Phase - No UI yet!");
-                    break;*/
-                case FLYING:
+                case MOVING, FLYING:
                     // If a piece of the current player is clicked, select it
                     if (engine.getBoard().getPosition(index) == engine.getCurrentPlayer().getColor()) {
                         selectedIndex = index;
@@ -90,7 +87,6 @@ public class MainFrame extends JFrame{
                 default:
                     break;
             }
-        
         }
 
         if (success) {
@@ -112,7 +108,7 @@ public class MainFrame extends JFrame{
             case MOVING: phaseName = "Moving Phase"; break;
             case FLYING: phaseName = "Flying Phase!"; break;
             case GAME_OVER: 
-                statusLabel.setText("GAME OVER! Winner: " + (engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? "Black" : "White"));
+                statusLabel.setText("GAME OVER! Winner: " + (engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? "White" : "Black"));
                 statusLabel.setForeground(Color.BLUE);
                 return;
         }
