@@ -9,11 +9,10 @@ import java.awt.*;
 public class HandPanel extends JPanel{
     private final GameEngine engine;
     private static final int DEFAULT_PIECE_SIZE = 30;
-    /*private static final int SPACING = 35;*/
 
     /**
-     * TODO
-     * @param engine
+     * Constructor for the HandPanel class. Initializes the hand panel with the game engine.
+     * @param engine The game engine instance.
      */
     public HandPanel(GameEngine engine){
         this.engine = engine;
@@ -23,8 +22,8 @@ public class HandPanel extends JPanel{
     }
     
     /**    
-     * TODO
-     * @param g
+     * Overrides the paintComponent method to draw the pieces in the hand panel.
+     * @param g The graphics context.
      */
     @Override
     protected void paintComponent(Graphics g) {

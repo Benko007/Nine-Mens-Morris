@@ -12,9 +12,11 @@ public class MainFrame extends JFrame{
     private BoardPanel boardPanel;
     private HandPanel handPanel;
     private JLabel statusLabel;
+    private int selectedIndex = -1; // For moving phase, to store the selected piece index
 
     /**
-     * TODO
+     * Constructor for the MainFrame class. Initializes the main window of the application.
+     * Sets up the title, default close operation, layout, and initializes the game engine.
      */
     public MainFrame() {
         setTitle("Nine Men's Morris");
@@ -44,33 +46,52 @@ public class MainFrame extends JFrame{
 
         pack();
         setLocationRelativeTo(null);
-        setMinimumSize(new Dimension(650, 700));
+        setMinimumSize(new Dimension(650, 800));
     }
 
     /**
-     * TODO
-     * @param index
+     * Handles the event when a node on the board is clicked.
+     * @param index The index of the clicked node.
      */
     private void handleNodeClicked(int index) {
         boolean success = false;
-        
-        // 
-        switch (engine.getCurrentPhase()) {
-            case PLACING:
-                success = engine.placePiece(index);
-                break;
-            // TODO: MOVING & FLYING 
-            case MOVING:
-                System.out.println("Moving Phase - No UI yet!");
-                break;
-            case FLYING:
-                System.out.println("Flying Phase - No UI yet!");
-                break;
-            default:
-                break;
-        }
 
-        // TODO: Piece remove (isMustRemovePiece) handling
+        // Case 1: must remove an opponent's piece
+        if (engine.isMustRemovePiece()) {
+            success = engine.removePiece(index);
+            if (success) selectedIndex = -1; // Reset selected index after removing a piece
+        } 
+        // Case 2: Placing, Moving, or Flying phase
+        else {
+            switch (engine.getCurrentPhase()) {
+                case PLACING:
+                    success = engine.placePiece(index);
+                    break; 
+                case MOVING:
+                    /*System.out.println("Moving Phase - No UI yet!");
+                    break;*/
+                case FLYING:
+                    // If a piece of the current player is clicked, select it
+                    if (engine.getBoard().getPosition(index) == engine.getCurrentPlayer().getColor()) {
+                        selectedIndex = index;
+                        boardPanel.setSelectedIndex(selectedIndex); // Notify the BoardPanel of the selected index
+                        boardPanel.repaint();
+                        return; // Exit early to avoid trying to move immediately after selecting
+                    } 
+                    // If an empty space is clicked and the player has a selected piece, try to move
+                    else if (engine.getBoard().isEmpty(index) && selectedIndex != -1) {
+                        success = engine.movePiece(selectedIndex, index);
+                        if (success) {
+                            selectedIndex = -1; // After a successful move, reset the selected index
+                            boardPanel.setSelectedIndex(-1);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        
+        }
 
         if (success) {
             updateStatusLabel();
@@ -80,17 +101,27 @@ public class MainFrame extends JFrame{
     }
 
     /**
-     * TODO
+     * Updates the status label based on the current game state.
      */
     private void updateStatusLabel() {
         String playerName = engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? "White" : "Black";
-        String phaseName = engine.getCurrentPhase().name();
+        String phaseName = "";
+        
+        switch (engine.getCurrentPhase()) {
+            case PLACING: phaseName = "Placing Phase"; break;
+            case MOVING: phaseName = "Moving Phase"; break;
+            case FLYING: phaseName = "Flying Phase!"; break;
+            case GAME_OVER: 
+                statusLabel.setText("GAME OVER! Winner: " + (engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? "Black" : "White"));
+                statusLabel.setForeground(Color.BLUE);
+                return;
+        }
         
         if (engine.isMustRemovePiece()) {
-            statusLabel.setText("MILL! " + playerName + " - Choose an enemy piece to remove!");
+            statusLabel.setText("MILL! " + playerName + " - Select a piece to remove!");
             statusLabel.setForeground(Color.RED);
         } else {
-            statusLabel.setText("Round: " + playerName + " | Phase: " + phaseName);
+            statusLabel.setText("Turn: " + playerName + " | Phase: " + phaseName);
             statusLabel.setForeground(Color.BLACK);
         }
     }

@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 public class BoardPanel extends JPanel{
     private Board board;
     private Consumer<Integer> onNodeClicked;
+    private int selectedIndex = -1; // For moving phase, to store the selected piece index
 
     private static final int[][] GRID = {
         {0, 0}, {3, 0}, {6, 0}, // 0, 1, 2
@@ -60,7 +61,8 @@ public class BoardPanel extends JPanel{
     }
 
     /**    
-     * TODO:
+     * Overrides the paintComponent method to draw the board and pieces.
+     * @param g the graphics context.
      */
     @Override 
     protected void paintComponent(Graphics g){
@@ -101,6 +103,12 @@ public class BoardPanel extends JPanel{
                 g2.setColor(Color.BLACK);
                 g2.fillOval(cx - 5, cy - 5, 10, 10);
             } else {
+                if (i == selectedIndex) {
+                    // Highlight the selected piece
+                    g2.setColor(Color.RED);
+                    g2.setStroke(new BasicStroke(3));
+                    g2.drawOval(cx - 25, cy - 25, 50, 50);
+                }
                 // Draw a piece
                 if (piece == PlayerColor.WHITE) {
                     g2.setColor(Color.WHITE);
@@ -120,10 +128,10 @@ public class BoardPanel extends JPanel{
 
     // =================== Helper methods ====================
     /**
-     * TODO
-     * @param mouseX
-     * @param mouseY
-     * @return
+     * Finds the closest node index to the given mouse coordinates.
+     * @param mouseX the x-coordinate of the mouse click.
+     * @param mouseY the y-coordinate of the mouse click.
+     * @return the index of the closest node, or -1 if no node is close enough.
      */
     private int getClosestNodeIndex(int mouseX, int mouseY) {
         int margin = 50;
@@ -143,18 +151,22 @@ public class BoardPanel extends JPanel{
     }
 
     /**
-     * TODO
-     * @param g2
-     * @param minCoord
-     * @param maxCoord
-     * @param margin
-     * @param cellSize
+     * Draws a square on the board.
+     * @param g2 the graphics context
+     * @param minCoord the minimum coordinate
+     * @param maxCoord the maximum coordinate
+     * @param margin the margin
+     * @param cellSize the size of each cell
      */
     private void drawSquare(Graphics2D g2, int minCoord, int maxCoord, int margin, int cellSize) {
         int x = margin + minCoord * cellSize;
         int y = margin + minCoord * cellSize;
         int size = (maxCoord - minCoord) * cellSize;
         g2.drawRect(x, y, size, size);
+    }
+
+    public void setSelectedIndex(int selectedIndex) {
+        this.selectedIndex = selectedIndex;
     }
     
 }
