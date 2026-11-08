@@ -24,17 +24,16 @@ public class MainFrame extends JFrame{
         setLayout(new BorderLayout());
 
         // Initialize a new Game
-        engine = new GameEngine("Player 1 (White)", "Player 2 (Black)");
+        engine = null; // Will be initialized when starting a new game
 
         // Top status bar initialization
-        statusLabel = new JLabel("Welcome! Placing Phase - White's move.", SwingConstants.CENTER);
+        statusLabel = new JLabel("Welcome! Please start a new game.", SwingConstants.CENTER);
         statusLabel.setFont(new Font("Arial", Font.BOLD, 16));
         statusLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         add(statusLabel, BorderLayout.NORTH);
 
         // Board
         boardPanel = new BoardPanel();
-        boardPanel.setBoard(engine.getBoard());
         
         // On click event manager
         boardPanel.setOnNodeClicked(this::handleNodeClicked);
@@ -44,9 +43,79 @@ public class MainFrame extends JFrame{
         handPanel = new HandPanel(engine);
         add(handPanel, BorderLayout.SOUTH);
 
+        createMenuBar();
+
         pack();
         setLocationRelativeTo(null);
         setMinimumSize(new Dimension(650, 800));
+    }
+
+    /**
+     * Creates the menu bar for the main frame.
+     * Adds "File" menu with "New Game" and "Exit" options.
+     */
+    private void createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        JMenu fileMenu = new JMenu("File");
+
+        JMenuItem newGameItem = new JMenuItem("New Game");
+        newGameItem.addActionListener(e -> showNewGameDialog());
+
+        JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.addActionListener(e -> System.exit(0));
+
+        fileMenu.add(newGameItem);
+        fileMenu.addSeparator();
+        fileMenu.add(exitItem);
+
+        menuBar.add(fileMenu);
+        setJMenuBar(menuBar);
+    }
+
+    /**
+     * Displays a dialog to start a new game.
+     * Allows players to enter their names and select a theme.
+     */
+    private void showNewGameDialog() {
+        JTextField player1Field = new JTextField("Player 1 (White)");
+        JTextField player2Field = new JTextField("Player 2 (Black)");
+
+        String[] themes = {"Classic", "Dark", "Light"};
+        JComboBox<String> themeComboBox = new JComboBox<>(themes);
+
+        Object[] message = {
+            "Player 1 Name:", player1Field,
+            "Player 2 Name:", player2Field,
+            "Select Theme:", themeComboBox
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "New Game", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            engine = new GameEngine( player1Field.getText(), player2Field.getText());
+            selectedIndex = -1; // Reset selected index for the new game
+            
+            if(themeComboBox.getSelectedIndex() == 1) {
+                boardPanel.setBackground(Color.DARK_GRAY);
+                boardPanel.setLineColor(Color.LIGHT_GRAY);
+                handPanel.setBackground(Color.GRAY);
+            }
+            else if(themeComboBox.getSelectedIndex() == 2) {
+                boardPanel.setBackground(Color.LIGHT_GRAY);
+                handPanel.setBackground(Color.WHITE);
+            }
+            else {
+                boardPanel.setBackground(new Color(245, 222, 179));
+                handPanel.setBackground(new Color(220, 200, 160));
+            }
+
+            boardPanel.setBoard(engine.getBoard());
+            boardPanel.setSelectedIndex(-1);
+            handPanel.setEngine(engine);
+
+            updateStatusLabel();
+            boardPanel.repaint();
+            handPanel.repaint();
+        }
     }
 
     /**
@@ -54,6 +123,8 @@ public class MainFrame extends JFrame{
      * @param index The index of the clicked node.
      */
     private void handleNodeClicked(int index) {
+        
+        if (engine == null) return; // No game in progress
         boolean success = false;
 
         // Case 1: must remove an opponent's piece
@@ -122,10 +193,16 @@ public class MainFrame extends JFrame{
         }
     }
 
+
+
+// ==================== MAIN ====================
+
     public static void main(String[] args) {
         // Start Swing GUI on the right thread (Event Dispatch Thread)
         SwingUtilities.invokeLater(() -> {
-            new MainFrame().setVisible(true);
+            MainFrame frame = new MainFrame();
+            frame.setVisible(true);
+            frame.showNewGameDialog(); // Show the new game dialog immediately on startup
         });
     }
 }

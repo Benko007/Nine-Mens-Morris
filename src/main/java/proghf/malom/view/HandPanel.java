@@ -7,7 +7,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class HandPanel extends JPanel{
-    private final GameEngine engine;
+    private GameEngine engine;
     private static final int DEFAULT_PIECE_SIZE = 30;
 
     /**
@@ -75,5 +75,13 @@ public class HandPanel extends JPanel{
                 g2.drawOval(x, y, pieceSize, pieceSize);
             }
         }
+    }
+
+    /**
+     * Sets the game engine for the hand panel.
+     * @param engine The game engine instance.
+     */
+    public void setEngine(GameEngine engine) {
+        this.engine = engine;
     }
 }

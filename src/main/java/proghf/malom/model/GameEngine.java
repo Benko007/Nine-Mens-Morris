@@ -172,7 +172,10 @@ public class GameEngine {
         // 3. Turn transition
         currentPlayer = getOpponent();
         
-        // TODO: Check if the new current player can make a valid move in the MOVING or FLYING phase. If not, set the game phase to GAME_OVER.
+        if (currentPhase == GamePhase.MOVING && !hasValidMove(currentPlayer)) {
+            currentPhase = GamePhase.GAME_OVER;
+            currentPlayer = getOpponent(); // The player who cannot move loses, so the other player is the winner
+        }
     }
 
     /**
@@ -187,5 +190,25 @@ public class GameEngine {
             }
         }
         return true; // All opponent's pieces are in mills
+    }
+
+    /**
+     * Checks if the given player has any valid moves left.
+     * @param player the player to check for valid moves.
+     * @return true if the player has valid moves, false otherwise.
+     */
+    private boolean hasValidMove(Player player){
+        if(player.canFly()) return true;
+
+        for(int i = 0; i < Board.NUMBER_OF_POSITIONS; i++){
+            if(board.getPosition(i) == player.getColor()){
+                for(int j = 0; j < Board.NUMBER_OF_POSITIONS; j++){
+                    if(board.isEmpty(j) && board.areAdjacent(i, j)){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

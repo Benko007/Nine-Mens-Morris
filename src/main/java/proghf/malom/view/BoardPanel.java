@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 
 public class BoardPanel extends JPanel{
     private Board board;
+    private Color lineColor = Color.DARK_GRAY;
     private Consumer<Integer> onNodeClicked;
     private int selectedIndex = -1; // For moving phase, to store the selected piece index
 
@@ -67,8 +68,7 @@ public class BoardPanel extends JPanel{
     @Override 
     protected void paintComponent(Graphics g){
         super.paintComponent(g);
-        if (board == null) return;
-
+        
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
@@ -78,7 +78,7 @@ public class BoardPanel extends JPanel{
         int cellSize = (Math.min(width, height) - 2 * margin) / 6;
 
         // Settings for the lines to draw
-        g2.setColor(Color.DARK_GRAY);
+        g2.setColor(lineColor);
         g2.setStroke(new BasicStroke(3));
 
         // Outer, middle, inner squares
@@ -92,6 +92,8 @@ public class BoardPanel extends JPanel{
         g2.drawLine(margin, margin + 3*cellSize, margin + 2*cellSize, margin + 3*cellSize); // Left
         g2.drawLine(margin + 4*cellSize, margin + 3*cellSize, margin + 6*cellSize, margin + 3*cellSize); // Right
 
+        if (board == null) return;
+
         // Draw the nodes and the pieces
         for (int i = 0; i < Board.NUMBER_OF_POSITIONS; i++) {
             int cx = margin + GRID[i][0] * cellSize;
@@ -100,7 +102,7 @@ public class BoardPanel extends JPanel{
             PlayerColor piece = board.getPosition(i);
             if (piece == PlayerColor.NONE) {
                 // Empty node
-                g2.setColor(Color.BLACK);
+                g2.setColor(lineColor);
                 g2.fillOval(cx - 5, cy - 5, 10, 10);
             } else {
                 if (i == selectedIndex) {
@@ -165,8 +167,20 @@ public class BoardPanel extends JPanel{
         g2.drawRect(x, y, size, size);
     }
 
+    /**
+     * Sets the selected index for the moving phase.
+     * @param selectedIndex the index of the selected piece.
+     */
     public void setSelectedIndex(int selectedIndex) {
         this.selectedIndex = selectedIndex;
+    }
+
+    /**
+     * Sets the line color for the board.
+     * @param lineColor the color to set for the lines.
+     */
+    public void setLineColor(Color lineColor) {
+        this.lineColor = lineColor;
     }
     
 }
