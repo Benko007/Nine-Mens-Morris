@@ -6,6 +6,7 @@ import javax.swing.*;
 import javax.swing.border.Border;
 
 import java.awt.*;
+import java.io.*;
 
 public class MainFrame extends JFrame{
     private GameEngine engine;
@@ -20,7 +21,14 @@ public class MainFrame extends JFrame{
      */
     public MainFrame() {
         setTitle("Nine Men's Morris");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override 
+            public void windowClosing(java.awt.event.WindowEvent e){
+                confirmExit();
+            }
+        });
+
         setLayout(new BorderLayout());
 
         // Initialize a new Game
@@ -61,10 +69,19 @@ public class MainFrame extends JFrame{
         JMenuItem newGameItem = new JMenuItem("New Game");
         newGameItem.addActionListener(e -> showNewGameDialog());
 
+        JMenuItem saveGameItem = new JMenuItem("Save Game");
+        saveGameItem.addActionListener(e -> saveGame());
+
+        JMenuItem loadGameItem = new JMenuItem("Load Game");
+        loadGameItem.addActionListener(e -> loadGame());
+
         JMenuItem exitItem = new JMenuItem("Exit");
-        exitItem.addActionListener(e -> System.exit(0));
+        exitItem.addActionListener(e -> confirmExit());
 
         fileMenu.add(newGameItem);
+        fileMenu.addSeparator();
+        fileMenu.add(saveGameItem);
+        fileMenu.add(loadGameItem);
         fileMenu.addSeparator();
         fileMenu.add(exitItem);
 
@@ -75,8 +92,9 @@ public class MainFrame extends JFrame{
     /**
      * Displays a dialog to start a new game.
      * Allows players to enter their names and select a theme.
+     * @return true if a new game was started, false otherwise.
      */
-    private void showNewGameDialog() {
+    private boolean showNewGameDialog() {
         JTextField player1Field = new JTextField("Player 1 (White)");
         JTextField player2Field = new JTextField("Player 2 (Black)");
 
@@ -115,7 +133,127 @@ public class MainFrame extends JFrame{
             updateStatusLabel();
             boardPanel.repaint();
             handPanel.repaint();
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * Displays a dialog to start a new game.
+     * Allows players to enter their names and select a theme.
+     */
+    public void showStartDialog() {
+        String[] options = {"New Game", "Load Game", "Exit"};
+        int choice = JOptionPane.showOptionDialog(
+            this, 
+            "Welcome to Nine Men's Morris!", 
+            "Start Game",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            options,
+            options[0]);
+
+        switch (choice) {
+            case 0: // New Game
+                boolean gameStarted = showNewGameDialog();
+                if (!gameStarted && engine == null) {
+                    showStartDialog(); // If no game started, show the dialog again
+                }
+                break;
+            case 1: // Load Game
+                boolean gameLoaded = loadGame();
+                if (!gameLoaded && engine == null) {
+                    showStartDialog(); // If the game failed to load, show the dialog again
+                }
+                break;
+            default: // Exit or closed dialog
+                confirmExit();
+                showStartDialog(); // If the user cancels, show the dialog again
+        }
+    }
+
+    /**
+     * Confirms with the user before exiting the application.
+     * Displays a confirmation dialog to ensure the user wants to exit.
+     */
+    private void confirmExit() {
+        int option = JOptionPane.showConfirmDialog(
+            this,
+            "Do you really want to exit?",
+            "Exit Confirmation",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.QUESTION_MESSAGE
+        );
+        if (option == JOptionPane.YES_OPTION) {
+            System.exit(0);
+        }
+    }
+
+    /**
+     * Saves the current game state to a file.
+     * Prompts the user to select a file location and name for saving.
+     */
+    private void saveGame() {
+        if (engine == null) {
+            JOptionPane.showMessageDialog(this, "No game in progress to save.", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save Game");
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            // Ensure the file has the correct extension
+            if (!file.getName().endsWith(".malom")) {
+                file = new File(file.getAbsolutePath() + ".malom");
+            }
+
+            try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file))) {
+                oos.writeObject(engine);
+                JOptionPane.showMessageDialog(this, "Game saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error saving game: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    /**
+     * Loads a previously saved game state from a file.
+     * Prompts the user to select a file to load.
+     * @return true if the game was loaded successfully, false otherwise.
+     */
+    private boolean loadGame() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Load Game");
+
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
+                // 1. Deserialize the GameEngine object
+                GameEngine loadedEngine = (GameEngine) ois.readObject();
+                
+                // 2. Reset the selected index and notify the BoardPanel
+                selectedIndex = -1;
+                boardPanel.setSelectedIndex(-1);
+
+                // 3. Update the engine and refresh the UI components
+                this.engine = loadedEngine;
+                boardPanel.setBoard(this.engine.getBoard());
+                handPanel.setEngine(this.engine);
+                
+                updateStatusLabel();
+                boardPanel.repaint();
+                handPanel.repaint();
+
+                JOptionPane.showMessageDialog(this, "Game loaded successfully.", "Load Game", JOptionPane.INFORMATION_MESSAGE);
+                return true;
+            } catch (IOException | ClassNotFoundException ex) {
+                JOptionPane.showMessageDialog(this, "Error loading game: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        return false;
     }
 
     /**
@@ -202,7 +340,7 @@ public class MainFrame extends JFrame{
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();
             frame.setVisible(true);
-            frame.showNewGameDialog(); // Show the new game dialog immediately on startup
+            frame.showStartDialog(); // Show the new game dialog immediately on startup
         });
     }
 }

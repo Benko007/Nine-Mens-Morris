@@ -1,6 +1,8 @@
 package proghf.malom.model;
 
-public class GameEngine {
+import java.io.Serializable;
+
+public class GameEngine implements Serializable {
     private final Board board;
     private final Player player1;
     private final Player player2;

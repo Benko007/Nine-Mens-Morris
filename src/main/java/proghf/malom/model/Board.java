@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Board {
+import java.io.Serializable;
+
+public class Board implements Serializable {
     public static final int NUMBER_OF_POSITIONS = 24;
     private final PlayerColor[] positions;
 

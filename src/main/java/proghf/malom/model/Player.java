@@ -1,6 +1,8 @@
 package proghf.malom.model;
 
-public class Player {
+import java.io.Serializable;
+
+public class Player implements Serializable {
     private final String name;
     private final PlayerColor color;
     private int piecesInHand;
