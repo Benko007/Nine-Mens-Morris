@@ -65,9 +65,13 @@ public class MainFrame extends JFrame{
     private void createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
+        JMenu newGameMenu = new JMenu("New Game");
 
-        JMenuItem newGameItem = new JMenuItem("New Game");
-        newGameItem.addActionListener(e -> showNewGameDialog());
+        JMenuItem multiplayer = new JMenuItem("Multiplayer");
+        multiplayer.addActionListener(e -> showMulitplayerGameDialog());
+
+        JMenuItem robot = new JMenuItem("Play against Robot");
+        robot.addActionListener(e -> showRobotGameDialog());
 
         JMenuItem saveGameItem = new JMenuItem("Save Game");
         saveGameItem.addActionListener(e -> saveGame());
@@ -78,14 +82,15 @@ public class MainFrame extends JFrame{
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> confirmExit());
 
-        fileMenu.add(newGameItem);
-        fileMenu.addSeparator();
+        newGameMenu.add(multiplayer);
+        newGameMenu.add(robot);
         fileMenu.add(saveGameItem);
         fileMenu.add(loadGameItem);
         fileMenu.addSeparator();
         fileMenu.add(exitItem);
 
         menuBar.add(fileMenu);
+        menuBar.add(newGameMenu);
         setJMenuBar(menuBar);
     }
 
@@ -94,7 +99,7 @@ public class MainFrame extends JFrame{
      * Allows players to enter their names and select a theme.
      * @return true if a new game was started, false otherwise.
      */
-    private boolean showNewGameDialog() {
+    private boolean showMultiplayerGameDialog() {
         JTextField player1Field = new JTextField("Player 1 (White)");
         JTextField player2Field = new JTextField("Player 2 (Black)");
 
@@ -138,6 +143,27 @@ public class MainFrame extends JFrame{
         return false;
     }
 
+    private boolean showRobotGameDialog() {
+        JTextField p1Field = new JTextField("Player");
+        String[] difficulties = {"Chaos (Easy)", "Greedy (Medium)", "Tactical (Hard)"};
+        JComboBox<String> diffBox = new JComboBox<>(difficulties);
+        String[] themes = {"Classic", "Dark", "Light"};
+        JComboBox<String> themeBox = new JComboBox<>(themes);
+
+        Object[] message = {
+            "Player Name (White):", p1Field,
+            "Robot Difficulty (Black):", diffBox,
+            "Board Theme:", themeBox
+        };
+
+        int option = JOptionPane.showConfirmDialog(this, message, "New Game - Against Robot", JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.OK_OPTION) {
+            JOptionPane.showMessageDialog(this, "The robot opponent logic is still under development.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return false; // Dont start a game yet, as the robot logic is not implemented
+        }
+        return false;
+    }
+
     /**
      * Displays a dialog to start a new game.
      * Allows players to enter their names and select a theme.
@@ -156,10 +182,7 @@ public class MainFrame extends JFrame{
 
         switch (choice) {
             case 0: // New Game
-                boolean gameStarted = showNewGameDialog();
-                if (!gameStarted && engine == null) {
-                    showStartDialog(); // If no game started, show the dialog again
-                }
+                showModeSelectionDialog();
                 break;
             case 1: // Load Game
                 boolean gameLoaded = loadGame();
@@ -170,6 +193,36 @@ public class MainFrame extends JFrame{
             default: // Exit or closed dialog
                 confirmExit();
                 showStartDialog(); // If the user cancels, show the dialog again
+        }
+    }
+
+    /**
+     * Displays a dialog to select the game mode (Multiplayer or Play against Robot).
+     * If the user cancels, the start dialog is shown again.
+     */
+    private void showModeSelectionDialog() {
+        String[] modes = {"Multiplayer", "Play against Robot", "Cancel"};
+
+        int modeChoice = JOptionPane.showOptionDialog(
+            this,
+            "Select Game Mode:",
+            "Game Mode Selection",
+            JOptionPane.DEFAULT_OPTION,
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            modes,
+            modes[0]);
+
+        boolean started = false;
+
+        if (modeChoice == 0) {
+            started = showMultiplayerGameDialog();
+        } else if (modeChoice == 1) {
+            started = showRobotGameDialog();
+        } 
+        
+        if (!started && engine == null) {
+            showStartDialog(); // If the user cancels, show the dialog again
         }
     }
 
