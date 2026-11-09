@@ -68,5 +68,4 @@ public class ChaosBot implements BotStrategy {
                 break;
         }
     }
-    
 }
