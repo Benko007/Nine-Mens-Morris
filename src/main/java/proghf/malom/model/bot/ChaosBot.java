@@ -12,6 +12,10 @@ import java.util.Random;
 public class ChaosBot implements BotStrategy {
     protected Random rand = new Random();
 
+    /**
+     * Executes a move for the ChaosBot based on the current game state.
+     * @param engine The game engine.
+     */
     @Override
     public void executeMove(GameEngine engine) {
         Board board = engine.getBoard();

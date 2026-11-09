@@ -11,6 +11,10 @@ import proghf.malom.model.PlayerColor;
 
 public class GreedyBot extends ChaosBot {
     
+    /**
+     * Executes a move for the GreedyBot based on the current game state.
+     * @param engine The game engine.
+     */
     @Override 
     public void executeMove(GameEngine engine) {
         Board board = engine.getBoard();
@@ -84,7 +88,12 @@ public class GreedyBot extends ChaosBot {
     }
 
     /* ================== Helper methods ================== */
-
+    /**
+     * Removes an opponent's piece from the board.
+     * @param engine The game engine.
+     * @param board The current game board.
+     * @param oppColor The color of the opponent's pieces.
+     */
     protected void doRemove(GameEngine engine, Board board, PlayerColor oppColor) {
         List<Integer> oppPieces = new ArrayList<>();
         for (int i = 0; i < Board.NUMBER_OF_POSITIONS; i++) {
@@ -96,16 +105,32 @@ public class GreedyBot extends ChaosBot {
         }
     }
 
+    /**
+     * Performs the default placement move for the bot.
+     * @param engine The game engine.
+     * @param empties The list of empty positions on the board.
+     */
     protected void doDefaultPlace(GameEngine engine, List<Integer> empties) {
         engine.placePiece(empties.get(rand.nextInt(empties.size())));
     }
 
+    /**
+     * Performs the default move for the bot.
+     * @param engine The game engine.
+     * @param validMoves The list of valid moves.
+     */
     protected void doDefaultMove(GameEngine engine, List<int[]> validMoves) {
         int[] move = validMoves.get(rand.nextInt(validMoves.size()));
         engine.movePiece(move[0], move[1]);
     }
 
-    // Simulates placing a piece at the given index and checks if it would form a mill.
+    /**
+     * Checks if placing a piece of the given color at the specified index would form a mill.
+     * @param board The current game board.
+     * @param index The index to check.
+     * @param color The color of the piece to place.
+     * @return true if placing the piece would form a mill, false otherwise.
+     */
     protected boolean wouldFormMill(Board board, int index, PlayerColor color) {
         board.setPosition(index, color);
         boolean mill = board.formsMill(index);

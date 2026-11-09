@@ -164,11 +164,9 @@ public class MainFrame extends JFrame{
             if (diffIndex == 0) {
                 currentBot = new proghf.malom.model.bot.ChaosBot();
             } else if (diffIndex == 1) {
-                //currentBot = new proghf.malom.model.bot.GreedyBot();
-                return false; // GreedyBot not implemented yet
+                currentBot = new proghf.malom.model.bot.GreedyBot();
             } else {
-                //currentBot = new proghf.malom.model.bot.TacticalBot();
-                return false; // TacticalBot not implemented yet
+                currentBot = new proghf.malom.model.bot.TacticalBot();
             }
 
             applyTheme(themeBox.getSelectedIndex() );
