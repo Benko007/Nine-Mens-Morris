@@ -11,7 +11,7 @@ import java.util.function.Consumer;
 
 public class BoardPanel extends JPanel{
     private Board board;
-    private Color lineColor = Color.DARK_GRAY;
+    private Color lineColor = Color.BLACK;
     private Consumer<Integer> onNodeClicked;
     private int selectedIndex = -1; // For moving phase, to store the selected piece index
 

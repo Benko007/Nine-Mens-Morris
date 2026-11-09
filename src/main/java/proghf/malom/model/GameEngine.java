@@ -96,7 +96,7 @@ public class GameEngine implements Serializable {
      */
     public boolean movePiece(int fromPosition, int toPosition) {
         // Check if the game is in the correct phase and if the current player must remove a piece
-        if ((currentPhase != GamePhase.MOVING && currentPhase != GamePhase.FLYING) || mustRemovePiece) return false;
+        if (currentPhase != GamePhase.MOVING || mustRemovePiece) return false;
 
         // Check if the source position is occupied by the current player's piece
         if (board.getPosition(fromPosition) != currentPlayer.getColor()) return false;
@@ -104,14 +104,8 @@ public class GameEngine implements Serializable {
         // Check if the destination position is empty
         if (!board.isEmpty(toPosition)) return false;
 
-        // Check if the destination position is empty
-        if (currentPhase == GamePhase.MOVING && !board.areAdjacent(fromPosition, toPosition)) return false;
-
-        // Check if the piece belongs to the current player
-        if (board.getPosition(fromPosition) != currentPlayer.getColor()) return false;
-
-        // Check adjacency for MOVING phase
-        if (currentPhase == GamePhase.MOVING && !board.areAdjacent(fromPosition, toPosition)) {
+        // Check if the move is valid (adjacent positions) unless the player can fly
+       if (!currentPlayer.canFly() && !board.areAdjacent(fromPosition, toPosition)) {
             return false;
         }
 
@@ -159,10 +153,6 @@ public class GameEngine implements Serializable {
         // Phase transitions based on the number of pieces in hand and on the board
         if (currentPhase == GamePhase.PLACING && player1.getPiecesInHand() == 0 && player2.getPiecesInHand() == 0) {
             currentPhase = GamePhase.MOVING;
-        }
-        
-        if (currentPhase == GamePhase.MOVING && (player1.canFly() || player2.canFly())) {
-            currentPhase = GamePhase.FLYING;
         }
 
         // 2. Victory condition check (if the opponent has only 2 pieces left after the placement phase)

@@ -59,39 +59,29 @@ public class MainFrame extends JFrame{
     }
 
     /**
-     * Creates the menu bar for the main frame.
-     * Adds "File" menu with "New Game" and "Exit" options.
+     * Applies the selected theme to the board and hand panels.
+     * @param i The index of the selected theme.
      */
-    private void createMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-        JMenu newGameMenu = new JMenu("New Game");
+    private void applyTheme(int i) {
 
-        JMenuItem multiplayer = new JMenuItem("Multiplayer");
-        multiplayer.addActionListener(e -> showMulitplayerGameDialog());
-
-        JMenuItem robot = new JMenuItem("Play against Robot");
-        robot.addActionListener(e -> showRobotGameDialog());
-
-        JMenuItem saveGameItem = new JMenuItem("Save Game");
-        saveGameItem.addActionListener(e -> saveGame());
-
-        JMenuItem loadGameItem = new JMenuItem("Load Game");
-        loadGameItem.addActionListener(e -> loadGame());
-
-        JMenuItem exitItem = new JMenuItem("Exit");
-        exitItem.addActionListener(e -> confirmExit());
-
-        newGameMenu.add(multiplayer);
-        newGameMenu.add(robot);
-        fileMenu.add(saveGameItem);
-        fileMenu.add(loadGameItem);
-        fileMenu.addSeparator();
-        fileMenu.add(exitItem);
-
-        menuBar.add(fileMenu);
-        menuBar.add(newGameMenu);
-        setJMenuBar(menuBar);
+        switch(i){
+            case 0: // Classic
+                boardPanel.setBackground(new Color(245, 222, 179));
+                handPanel.setBackground(new Color(220, 200, 160));
+                break;
+            case 1: // Dark
+                boardPanel.setBackground(Color.DARK_GRAY);
+                handPanel.setBackground(Color.GRAY);
+                break;
+            case 2: // Light
+                boardPanel.setBackground(Color.LIGHT_GRAY);
+                handPanel.setBackground(Color.WHITE);
+                break;
+        }
+        
+        // Repaint the panels to reflect the theme change
+        boardPanel.repaint();
+        handPanel.repaint();
     }
 
     /**
@@ -117,19 +107,7 @@ public class MainFrame extends JFrame{
             engine = new GameEngine( player1Field.getText(), player2Field.getText());
             selectedIndex = -1; // Reset selected index for the new game
             
-            if(themeComboBox.getSelectedIndex() == 1) {
-                boardPanel.setBackground(Color.DARK_GRAY);
-                boardPanel.setLineColor(Color.LIGHT_GRAY);
-                handPanel.setBackground(Color.GRAY);
-            }
-            else if(themeComboBox.getSelectedIndex() == 2) {
-                boardPanel.setBackground(Color.LIGHT_GRAY);
-                handPanel.setBackground(Color.WHITE);
-            }
-            else {
-                boardPanel.setBackground(new Color(245, 222, 179));
-                handPanel.setBackground(new Color(220, 200, 160));
-            }
+            applyTheme(themeComboBox.getSelectedIndex()); // Apply the selected theme
 
             boardPanel.setBoard(engine.getBoard());
             boardPanel.setSelectedIndex(-1);
@@ -224,6 +202,59 @@ public class MainFrame extends JFrame{
         if (!started && engine == null) {
             showStartDialog(); // If the user cancels, show the dialog again
         }
+    }
+
+    /**
+     * Creates the menu bar for the main frame.
+     * Adds "File" menu with "New Game" and "Exit" options.
+     */
+    private void createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu fileMenu = new JMenu("File");
+        JMenu newGameMenu = new JMenu("New Game");
+        JMenu themeMenu = new JMenu("Theme");
+
+        JMenuItem multiplayer = new JMenuItem("Multiplayer");
+        multiplayer.addActionListener(e -> showMultiplayerGameDialog());
+
+        JMenuItem robot = new JMenuItem("Play against Robot");
+        robot.addActionListener(e -> showRobotGameDialog());
+
+        JMenuItem classicTheme = new JMenuItem("Classic");
+        classicTheme.addActionListener(e -> applyTheme(0));
+
+        JMenuItem darkTheme = new JMenuItem("Dark");
+        darkTheme.addActionListener(e -> applyTheme(1));
+
+        JMenuItem lightTheme = new JMenuItem("Light");
+        lightTheme.addActionListener(e -> applyTheme(2));
+
+        JMenuItem saveGameItem = new JMenuItem("Save Game");
+        saveGameItem.addActionListener(e -> saveGame());
+
+        JMenuItem loadGameItem = new JMenuItem("Load Game");
+        loadGameItem.addActionListener(e -> loadGame());
+
+        JMenuItem exitItem = new JMenuItem("Exit");
+        exitItem.addActionListener(e -> confirmExit());
+
+        newGameMenu.add(multiplayer);
+        newGameMenu.add(robot);
+
+        fileMenu.add(saveGameItem);
+        fileMenu.add(loadGameItem);
+        fileMenu.addSeparator();
+        fileMenu.add(exitItem);
+
+        themeMenu.add(classicTheme);
+        themeMenu.add(darkTheme);
+        themeMenu.add(lightTheme);
+
+        menuBar.add(fileMenu);
+        menuBar.add(newGameMenu);
+        menuBar.add(themeMenu);
+        setJMenuBar(menuBar);
     }
 
     /**
@@ -329,7 +360,7 @@ public class MainFrame extends JFrame{
                 case PLACING:
                     success = engine.placePiece(index);
                     break; 
-                case MOVING, FLYING:
+                case MOVING:
                     // If a piece of the current player is clicked, select it
                     if (engine.getBoard().getPosition(index) == engine.getCurrentPlayer().getColor()) {
                         selectedIndex = index;
@@ -368,7 +399,6 @@ public class MainFrame extends JFrame{
         switch (engine.getCurrentPhase()) {
             case PLACING: phaseName = "Placing Phase"; break;
             case MOVING: phaseName = "Moving Phase"; break;
-            case FLYING: phaseName = "Flying Phase!"; break;
             case GAME_OVER: 
                 statusLabel.setText("GAME OVER! Winner: " + (engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? "White" : "Black"));
                 statusLabel.setForeground(Color.BLUE);
@@ -383,7 +413,6 @@ public class MainFrame extends JFrame{
             statusLabel.setForeground(Color.BLACK);
         }
     }
-
 
 
 // ==================== MAIN ====================
