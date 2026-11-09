@@ -15,6 +15,9 @@ public class MainFrame extends JFrame{
     private JLabel statusLabel;
     private int selectedIndex = -1; // For moving phase, to store the selected piece index
 
+    private proghf.malom.model.bot.BotStrategy currentBot; // Bot strategy for AI moves
+    private Timer botTimer; // Timer to delay bot moves for better UX
+
     /**
      * Constructor for the MainFrame class. Initializes the main window of the application.
      * Sets up the title, default close operation, layout, and initializes the game engine.
@@ -33,6 +36,22 @@ public class MainFrame extends JFrame{
 
         // Initialize a new Game
         engine = null; // Will be initialized when starting a new game
+        botTimer = new Timer(1500, e -> {
+            if (engine != null && currentBot != null && engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.BLACK) {
+                currentBot.executeMove(engine);
+
+                boardPanel.setSelectedIndex(-1);
+                updateStatusLabel();
+                boardPanel.repaint();
+                handPanel.repaint();
+
+                //IF the bot created a mill, it has to remove a piece, so we restart the timer to allow the bot to remove a piece after a delay
+                if(engine.getCurrentPhase() != proghf.malom.model.GamePhase.GAME_OVER){
+                    botTimer.restart(); // Restart the timer for the next bot move
+                }
+            }
+        });
+        botTimer.setRepeats(false);
 
         // Top status bar initialization
         statusLabel = new JLabel("Welcome! Please start a new game.", SwingConstants.CENTER);
@@ -105,6 +124,7 @@ public class MainFrame extends JFrame{
         int option = JOptionPane.showConfirmDialog(this, message, "New Game", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             engine = new GameEngine( player1Field.getText(), player2Field.getText());
+            currentBot = null; // No bot in multiplayer mode
             selectedIndex = -1; // Reset selected index for the new game
             
             applyTheme(themeComboBox.getSelectedIndex()); // Apply the selected theme
@@ -136,8 +156,34 @@ public class MainFrame extends JFrame{
 
         int option = JOptionPane.showConfirmDialog(this, message, "New Game - Against Robot", JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
-            JOptionPane.showMessageDialog(this, "The robot opponent logic is still under development.", "Info", JOptionPane.INFORMATION_MESSAGE);
-            return false; // Dont start a game yet, as the robot logic is not implemented
+            engine = new GameEngine(p1Field.getText(), "Robot (" + diffBox.getSelectedItem() + ")");
+            selectedIndex = -1;
+            
+            // Bot selection based on difficulty
+            int diffIndex = diffBox.getSelectedIndex();
+            if (diffIndex == 0) {
+                currentBot = new proghf.malom.model.bot.ChaosBot();
+            } else if (diffIndex == 1) {
+                //currentBot = new proghf.malom.model.bot.GreedyBot();
+                return false; // GreedyBot not implemented yet
+            } else {
+                //currentBot = new proghf.malom.model.bot.TacticalBot();
+                return false; // TacticalBot not implemented yet
+            }
+
+            applyTheme(themeBox.getSelectedIndex() );
+            
+            boardPanel.setBoard(engine.getBoard());
+            boardPanel.setSelectedIndex(-1);
+            handPanel.setEngine(engine);
+            
+            updateStatusLabel();
+            boardPanel.repaint();
+            handPanel.repaint();
+            
+            checkBotTurn();
+
+            return true;
         }
         return false;
     }
@@ -317,6 +363,7 @@ public class MainFrame extends JFrame{
             try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
                 // 1. Deserialize the GameEngine object
                 GameEngine loadedEngine = (GameEngine) ois.readObject();
+                currentBot = null; // Reset the bot
                 
                 // 2. Reset the selected index and notify the BoardPanel
                 selectedIndex = -1;
@@ -348,6 +395,10 @@ public class MainFrame extends JFrame{
         
         if (engine == null) return; // No game in progress
         boolean success = false;
+
+        if (currentBot != null && engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.BLACK) {
+            return;
+        }
 
         // Case 1: must remove an opponent's piece
         if (engine.isMustRemovePiece()) {
@@ -386,6 +437,18 @@ public class MainFrame extends JFrame{
             updateStatusLabel();
             boardPanel.repaint(); // Update the boardpanel after successful moving
             handPanel.repaint(); // Update the handpanel after successful moving
+            checkBotTurn(); // Check if it's the bot's turn after a successful move
+        }
+    }
+
+    private void checkBotTurn() {
+        if (engine != null && currentBot != null 
+            && engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.BLACK
+            && engine.getCurrentPhase() != proghf.malom.model.GamePhase.GAME_OVER) {
+            
+            statusLabel.setText("Bot is thinking...");
+            statusLabel.setForeground(Color.BLUE);
+            botTimer.restart(); // Start the timer for the bot's move
         }
     }
 
