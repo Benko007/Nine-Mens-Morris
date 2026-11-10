@@ -18,6 +18,8 @@ public class MainFrame extends JFrame{
     private proghf.malom.model.bot.BotStrategy currentBot; // Bot strategy for AI moves
     private Timer botTimer; // Timer to delay bot moves for better UX
 
+    private boolean isLeaderboardSaved = false; // Flag to ensure leaderboard is saved only once per game
+
     /**
      * Constructor for the MainFrame class. Initializes the main window of the application.
      * Sets up the title, default close operation, layout, and initializes the game engine.
@@ -109,6 +111,7 @@ public class MainFrame extends JFrame{
      * @return true if a new game was started, false otherwise.
      */
     private boolean showMultiplayerGameDialog() {
+        isLeaderboardSaved = false; // Reset the leaderboard saved flag for a new game
         JTextField player1Field = new JTextField("Player 1 (White)");
         JTextField player2Field = new JTextField("Player 2 (Black)");
 
@@ -141,7 +144,13 @@ public class MainFrame extends JFrame{
         return false;
     }
 
+    /**
+     * Displays a dialog to start a new game against a robot.
+     * Allows the player to enter their name, select the robot's difficulty, and choose a theme.
+     * @return true if a new game was started, false otherwise.
+     */
     private boolean showRobotGameDialog() {
+        isLeaderboardSaved = false; // Reset the leaderboard saved flag for a new game
         JTextField p1Field = new JTextField("Player");
         String[] difficulties = {"Chaos (Easy)", "Greedy (Medium)", "Tactical (Hard)"};
         JComboBox<String> diffBox = new JComboBox<>(difficulties);
@@ -258,6 +267,7 @@ public class MainFrame extends JFrame{
         JMenu fileMenu = new JMenu("File");
         JMenu newGameMenu = new JMenu("New Game");
         JMenu themeMenu = new JMenu("Theme");
+        JMenu statsMenu = new JMenu("Statistics");
 
         JMenuItem multiplayer = new JMenuItem("Multiplayer");
         multiplayer.addActionListener(e -> showMultiplayerGameDialog());
@@ -283,6 +293,12 @@ public class MainFrame extends JFrame{
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.addActionListener(e -> confirmExit());
 
+        JMenuItem leaderboardItem = new JMenuItem("Leaderboard");
+        leaderboardItem.addActionListener(e -> showLeaderboard());
+
+
+        statsMenu.add(leaderboardItem);
+
         newGameMenu.add(multiplayer);
         newGameMenu.add(robot);
 
@@ -298,6 +314,7 @@ public class MainFrame extends JFrame{
         menuBar.add(fileMenu);
         menuBar.add(newGameMenu);
         menuBar.add(themeMenu);
+        menuBar.add(statsMenu);
         setJMenuBar(menuBar);
     }
 
@@ -362,6 +379,7 @@ public class MainFrame extends JFrame{
                 // 1. Deserialize the GameEngine object
                 GameEngine loadedEngine = (GameEngine) ois.readObject();
                 currentBot = null; // Reset the bot
+                isLeaderboardSaved = false; // Reset the leaderboard saved flag for the loaded game
                 
                 // 2. Reset the selected index and notify the BoardPanel
                 selectedIndex = -1;
@@ -439,6 +457,10 @@ public class MainFrame extends JFrame{
         }
     }
 
+    /**
+     * Checks if it's the bot's turn and starts the bot's move if applicable.
+     * If the current player is the bot and the game is not over, the bot will execute its move after a delay.
+     */
     private void checkBotTurn() {
         if (engine != null && currentBot != null 
             && engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.BLACK
@@ -454,16 +476,26 @@ public class MainFrame extends JFrame{
      * Updates the status label based on the current game state.
      */
     private void updateStatusLabel() {
-        String playerName = engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? "White" : "Black";
+        String playerName = engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? engine.getPlayer1().getName() : engine.getPlayer2().getName();
         String phaseName = "";
         
         switch (engine.getCurrentPhase()) {
             case PLACING: phaseName = "Placing Phase"; break;
             case MOVING: phaseName = "Moving Phase"; break;
             case GAME_OVER: 
-                statusLabel.setText("GAME OVER! Winner: " + (engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? "White" : "Black"));
+                String winner = engine.getCurrentPlayer().getColor() == proghf.malom.model.PlayerColor.WHITE ? engine.getPlayer1().getName() : engine.getPlayer2().getName();
+                statusLabel.setText("GAME OVER! Winner: " + winner);
                 statusLabel.setForeground(Color.BLUE);
-                return;
+
+                if (!isLeaderboardSaved) {
+                proghf.malom.model.LeaderboardManager.saveResult(
+                    engine.getPlayer1().getName(), 
+                    engine.getPlayer2().getName(), 
+                    winner
+                );
+                isLeaderboardSaved = true;
+            }
+            return;
         }
         
         if (engine.isMustRemovePiece()) {
@@ -473,6 +505,40 @@ public class MainFrame extends JFrame{
             statusLabel.setText("Turn: " + playerName + " | Phase: " + phaseName);
             statusLabel.setForeground(Color.BLACK);
         }
+    }
+
+    private void showLeaderboard() {
+        java.util.List<proghf.malom.model.LeaderboardEntry> records = proghf.malom.model.LeaderboardManager.getRecords();
+
+        if(records.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No finished games to display.", "Leaderboard", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        String[] columnNames = {"#","Player 1", "Player 2", "Winner"};
+
+        Object[][] data = new Object[records.size()][4];
+        for (int i = 0; i < records.size(); i++) {
+            proghf.malom.model.LeaderboardEntry entry = records.get(i);
+            data[i][0] = (i+1) + ". ";
+            data[i][1] = entry.getPlayer1();
+            data[i][2] = entry.getPlayer2();
+            data[i][3] = entry.getWinner();
+        }
+
+        JTable table = new JTable(data, columnNames);
+        table.setEnabled(false);
+        table.getTableHeader().setReorderingAllowed(false);
+
+        table.getColumnModel().getColumn(0).setPreferredWidth(60);
+        table.getColumnModel().getColumn(1).setPreferredWidth(120);
+        table.getColumnModel().getColumn(2).setPreferredWidth(120);
+        table.getColumnModel().getColumn(3).setPreferredWidth(120);
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setPreferredSize(new Dimension(450, 200));
+
+        JOptionPane.showMessageDialog(this, scrollPane, "Leaderboard (Last 10 matches)", JOptionPane.PLAIN_MESSAGE);
     }
 
 
