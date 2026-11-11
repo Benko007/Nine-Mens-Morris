@@ -34,7 +34,7 @@ public class GreedyBot extends ChaosBot {
         }
         if (empties.isEmpty()) return;
 
-        // Case 2: Place or move a piece based on the current game phase
+        // Case 2: Place a piece 
         if (engine.getCurrentPhase() == proghf.malom.model.GamePhase.PLACING) {
             // Attack: Can I form a mill with this placement?
             for (int empty : empties) {
@@ -78,6 +78,14 @@ public class GreedyBot extends ChaosBot {
                     return;
                 }
                 board.setPosition(move[0], myColor); // Reset
+            }
+
+            int dangerNode = -1;
+            for (int empty : empties) {
+                if (wouldFormMill(board, empty, oppColor)) {
+                    dangerNode = empty; // Megtaláltuk a fenyegetést!
+                    break;
+                }
             }
             
             // If no mill can be formed, just make a random valid move
