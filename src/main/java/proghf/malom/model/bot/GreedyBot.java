@@ -80,11 +80,20 @@ public class GreedyBot extends ChaosBot {
                 board.setPosition(move[0], myColor); // Reset
             }
 
+            // Defense: Can I block the opponent from forming a mill?
             int dangerNode = -1;
             for (int empty : empties) {
                 if (wouldFormMill(board, empty, oppColor)) {
-                    dangerNode = empty; // Megtaláltuk a fenyegetést!
+                    dangerNode = empty; // Mark the position that could allow the opponent to form a mill
                     break;
+                }
+            }
+            if(dangerNode != -1) {
+                for (int[] move : validMoves) {
+                    if (move[1] == dangerNode) {
+                        engine.movePiece(move[0], move[1]);
+                        return;
+                    }
                 }
             }
             

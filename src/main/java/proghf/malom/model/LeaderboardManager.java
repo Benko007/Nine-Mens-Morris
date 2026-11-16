@@ -4,9 +4,18 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.logging.Logger;
+
 public class LeaderboardManager {
     private static final String LEADERBOARD_FILE = "leaderboard.dat";
     private static final int MAX_ENTRIES = 10;
+
+    private static final Logger logger = Logger.getLogger(LeaderboardManager.class.getName());
+
+    /**
+     * Private constructor to prevent instantiation
+     */
+    private LeaderboardManager() {}
 
     /**
      * Saves the result of a game to the leaderboard.
@@ -29,7 +38,7 @@ public class LeaderboardManager {
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(LEADERBOARD_FILE))) {
             oos.writeObject(records);
         } catch (IOException e) {
-            System.err.println("Error during leaderboard saving: " + e.getMessage());
+            logger.info("Error during leaderboard saving: " + e.getMessage());
         }
     }
 
@@ -46,7 +55,7 @@ public class LeaderboardManager {
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file))) {
             return (List<LeaderboardEntry>) ois.readObject();
         } catch (IOException | ClassNotFoundException e) {
-            System.err.println("Error during leaderboard loading: " + e.getMessage());
+            logger.info("Error during leaderboard loading: " + e.getMessage());
             return new ArrayList<>();
         }
     }

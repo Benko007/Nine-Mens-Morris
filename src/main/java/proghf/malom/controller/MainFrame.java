@@ -1,9 +1,9 @@
-package proghf.malom.view;
+package proghf.malom.controller;
 
-import proghf.malom.model.GameEngine;
+import proghf.malom.model.*;
+import proghf.malom.view.*;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 
 import java.awt.*;
 import java.io.*;
@@ -12,7 +12,7 @@ public class MainFrame extends JFrame{
     private GameEngine engine;
     private BoardPanel boardPanel;
     private HandPanel handPanel;
-    private JLabel statusLabel;
+    private final JLabel statusLabel;
     private int selectedIndex = -1; // For moving phase, to store the selected piece index
 
     private proghf.malom.model.bot.BotStrategy currentBot; // Bot strategy for AI moves
@@ -20,13 +20,20 @@ public class MainFrame extends JFrame{
 
     private boolean isLeaderboardSaved = false; // Flag to ensure leaderboard is saved only once per game
 
+    private static final String CLASSIC_STRING = "Classic";
+    private static final String DARK_STRING = "Dark";
+    private static final String LIGHT_STRING = "Light";
+    private static final String ERROR_STRING = "Error";
+    private static final String NEW_GAME_STRING = "New Game";
+    private static final String LOAD_GAME_STRING = "Load Game";
+
     /**
      * Constructor for the MainFrame class. Initializes the main window of the application.
      * Sets up the title, default close operation, layout, and initializes the game engine.
      */
     public MainFrame() {
         setTitle("Nine Men's Morris");
-        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
             @Override 
             public void windowClosing(java.awt.event.WindowEvent e){
@@ -86,6 +93,7 @@ public class MainFrame extends JFrame{
     private void applyTheme(int i) {
 
         switch(i){
+            default:
             case 0: // Classic
                 boardPanel.setBackground(new Color(245, 222, 179));
                 handPanel.setBackground(new Color(220, 200, 160));
@@ -115,7 +123,7 @@ public class MainFrame extends JFrame{
         JTextField player1Field = new JTextField("Player 1 (White)");
         JTextField player2Field = new JTextField("Player 2 (Black)");
 
-        String[] themes = {"Classic", "Dark", "Light"};
+        String[] themes = {CLASSIC_STRING, DARK_STRING, LIGHT_STRING};
         JComboBox<String> themeComboBox = new JComboBox<>(themes);
 
         Object[] message = {
@@ -124,7 +132,7 @@ public class MainFrame extends JFrame{
             "Select Theme:", themeComboBox
         };
 
-        int option = JOptionPane.showConfirmDialog(this, message, "New Game", JOptionPane.OK_CANCEL_OPTION);
+        int option = JOptionPane.showConfirmDialog(this, message, NEW_GAME_STRING, JOptionPane.OK_CANCEL_OPTION);
         if (option == JOptionPane.OK_OPTION) {
             engine = new GameEngine( player1Field.getText(), player2Field.getText());
             currentBot = null; // No bot in multiplayer mode
@@ -154,7 +162,7 @@ public class MainFrame extends JFrame{
         JTextField p1Field = new JTextField("Player");
         String[] difficulties = {"Chaos (Easy)", "Greedy (Medium)", "Tactical (Hard)"};
         JComboBox<String> diffBox = new JComboBox<>(difficulties);
-        String[] themes = {"Classic", "Dark", "Light"};
+        String[] themes = {CLASSIC_STRING, DARK_STRING, LIGHT_STRING};
         JComboBox<String> themeBox = new JComboBox<>(themes);
 
         Object[] message = {
@@ -170,12 +178,18 @@ public class MainFrame extends JFrame{
             
             // Bot selection based on difficulty
             int diffIndex = diffBox.getSelectedIndex();
-            if (diffIndex == 0) {
-                currentBot = new proghf.malom.model.bot.ChaosBot();
-            } else if (diffIndex == 1) {
-                currentBot = new proghf.malom.model.bot.GreedyBot();
-            } else {
-                currentBot = new proghf.malom.model.bot.TacticalBot();
+            switch(diffIndex) {
+                case 0:
+                    currentBot = new proghf.malom.model.bot.ChaosBot();
+                    break;
+                case 1:
+                    currentBot = new proghf.malom.model.bot.GreedyBot();
+                    break;
+                case 2:
+                    currentBot = new proghf.malom.model.bot.TacticalBot();
+                    break;
+                default:
+                    currentBot = new proghf.malom.model.bot.ChaosBot(); // Default to ChaosBot if something goes wrong
             }
 
             applyTheme(themeBox.getSelectedIndex() );
@@ -200,7 +214,7 @@ public class MainFrame extends JFrame{
      * Allows players to enter their names and select a theme.
      */
     public void showStartDialog() {
-        String[] options = {"New Game", "Load Game", "Exit"};
+        String[] options = {NEW_GAME_STRING, LOAD_GAME_STRING, "Exit"};
         int choice = JOptionPane.showOptionDialog(
             this, 
             "Welcome to Nine Men's Morris!", 
@@ -265,7 +279,7 @@ public class MainFrame extends JFrame{
         JMenuBar menuBar = new JMenuBar();
 
         JMenu fileMenu = new JMenu("File");
-        JMenu newGameMenu = new JMenu("New Game");
+        JMenu newGameMenu = new JMenu(NEW_GAME_STRING);
         JMenu themeMenu = new JMenu("Theme");
         JMenu statsMenu = new JMenu("Statistics");
 
@@ -275,19 +289,19 @@ public class MainFrame extends JFrame{
         JMenuItem robot = new JMenuItem("Play against Robot");
         robot.addActionListener(e -> showRobotGameDialog());
 
-        JMenuItem classicTheme = new JMenuItem("Classic");
+        JMenuItem classicTheme = new JMenuItem(CLASSIC_STRING);
         classicTheme.addActionListener(e -> applyTheme(0));
 
-        JMenuItem darkTheme = new JMenuItem("Dark");
+        JMenuItem darkTheme = new JMenuItem(DARK_STRING);
         darkTheme.addActionListener(e -> applyTheme(1));
 
-        JMenuItem lightTheme = new JMenuItem("Light");
+        JMenuItem lightTheme = new JMenuItem(LIGHT_STRING);
         lightTheme.addActionListener(e -> applyTheme(2));
 
         JMenuItem saveGameItem = new JMenuItem("Save Game");
         saveGameItem.addActionListener(e -> saveGame());
 
-        JMenuItem loadGameItem = new JMenuItem("Load Game");
+        JMenuItem loadGameItem = new JMenuItem(LOAD_GAME_STRING);
         loadGameItem.addActionListener(e -> loadGame());
 
         JMenuItem exitItem = new JMenuItem("Exit");
@@ -341,7 +355,7 @@ public class MainFrame extends JFrame{
      */
     private void saveGame() {
         if (engine == null) {
-            JOptionPane.showMessageDialog(this, "No game in progress to save.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "No game in progress to save.", ERROR_STRING, JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -358,7 +372,7 @@ public class MainFrame extends JFrame{
                 oos.writeObject(engine);
                 JOptionPane.showMessageDialog(this, "Game saved successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException ex) {
-                JOptionPane.showMessageDialog(this, "Error saving game: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error saving game: " + ex.getMessage(), ERROR_STRING, JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -370,7 +384,7 @@ public class MainFrame extends JFrame{
      */
     private boolean loadGame() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Load Game");
+        fileChooser.setDialogTitle(LOAD_GAME_STRING);
 
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
@@ -394,10 +408,10 @@ public class MainFrame extends JFrame{
                 boardPanel.repaint();
                 handPanel.repaint();
 
-                JOptionPane.showMessageDialog(this, "Game loaded successfully.", "Load Game", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Game loaded successfully.", LOAD_GAME_STRING, JOptionPane.INFORMATION_MESSAGE);
                 return true;
             } catch (IOException | ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(this, "Error loading game: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error loading game: " + ex.getMessage(), ERROR_STRING, JOptionPane.ERROR_MESSAGE);
             }
         }
         return false;
@@ -544,7 +558,7 @@ public class MainFrame extends JFrame{
 
 // ==================== MAIN ====================
 
-    public static void main(String[] args) {
+    public static void main() { // From Java 11, the main method can be defined without String[] args
         // Start Swing GUI on the right thread (Event Dispatch Thread)
         SwingUtilities.invokeLater(() -> {
             MainFrame frame = new MainFrame();

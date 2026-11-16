@@ -4,9 +4,9 @@ import java.io.Serializable;
 
 public class LeaderboardEntry implements Serializable {
     
-    private String player1name;
-    private String player2name;
-    private String winner;
+    private final String player1name;
+    private final String player2name;
+    private final String winner;
 
     /**
      * Constructs a new LeaderboardEntry with the specified player names and winner.
