@@ -45,7 +45,7 @@ public class HandPanel extends JPanel{
             // Calculate the available space
             int availableWidth = (width / 2) - 30;
             // Dynamic size
-            int pieceSize = Math.min(DEFAULT_PIECE_SIZE, Math.max(10, availableWidth / countP1 - 5));
+            int pieceSize = Math.clamp(availableWidth / (long)countP1 - 5, 10, DEFAULT_PIECE_SIZE);
             int spacing = pieceSize + 5; // The spacing decreases proportionally
 
             for (int i = 0; i < countP1; i++) {
@@ -53,7 +53,7 @@ public class HandPanel extends JPanel{
                 g2.setColor(Color.WHITE);
                 g2.fillOval(x, y, pieceSize, pieceSize);
                 g2.setColor(Color.DARK_GRAY);
-                g2.setStroke(new BasicStroke(Math.max(1, pieceSize / 15))); // The frame also gets thinner if it is very small.
+                g2.setStroke(new BasicStroke( (float) Math.max(1, pieceSize / 15))); // The frame also gets thinner if it is very small.
                 g2.drawOval(x, y, pieceSize, pieceSize);
             }
         }
@@ -62,7 +62,7 @@ public class HandPanel extends JPanel{
         int countP2 = p2.getPiecesInHand();
         if (countP2 > 0) {
             int availableWidth = (width / 2) - 30;
-            int pieceSize = Math.min(DEFAULT_PIECE_SIZE, Math.max(10, availableWidth / countP2 - 5));
+            int pieceSize = Math.clamp(availableWidth / (long)countP2 - 5, 10, DEFAULT_PIECE_SIZE);
             int spacing = pieceSize + 5;
 
             for (int i = 0; i < countP2; i++) {
@@ -71,7 +71,7 @@ public class HandPanel extends JPanel{
                 g2.setColor(Color.BLACK);
                 g2.fillOval(x, y, pieceSize, pieceSize);
                 g2.setColor(Color.DARK_GRAY);
-                g2.setStroke(new BasicStroke(Math.max(1, pieceSize / 15)));
+                g2.setStroke(new BasicStroke( (float) Math.max(1, pieceSize / 15)));
                 g2.drawOval(x, y, pieceSize, pieceSize);
             }
         }

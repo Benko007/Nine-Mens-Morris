@@ -15,7 +15,7 @@ public class MainFrame extends JFrame{
     private final JLabel statusLabel;
     private int selectedIndex = -1; // For moving phase, to store the selected piece index
 
-    private proghf.malom.model.bot.BotStrategy currentBot; // Bot strategy for AI moves
+    private transient proghf.malom.model.bot.BotStrategy currentBot; // Bot strategy for AI moves
     private Timer botTimer; // Timer to delay bot moves for better UX
 
     private boolean isLeaderboardSaved = false; // Flag to ensure leaderboard is saved only once per game

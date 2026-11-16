@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 public class BoardPanel extends JPanel{
     private Board board;
     private Color lineColor = Color.BLACK;
-    private Consumer<Integer> onNodeClicked;
+    private transient Consumer<Integer> onNodeClicked;
     private int selectedIndex = -1; // For moving phase, to store the selected piece index
 
     private static final int[][] GRID = {
@@ -145,7 +145,7 @@ public class BoardPanel extends JPanel{
             int cy = margin + GRID[i][1] * cellSize;
             
             // Pythagoras theorem
-            if (Math.hypot(cx - mouseX, cy - mouseY) <= clickRadius) {
+            if (Math.hypot((cx - mouseX), (cy - mouseY)) <= clickRadius) {
                 return i;
             }
         }
